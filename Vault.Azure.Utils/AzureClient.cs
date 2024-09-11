@@ -4,16 +4,16 @@ using Azure.Security.KeyVault.Secrets;
 
 namespace Vault.Azure.Utils
 {
-    public class AzureCredentialsHelper
+    public class AzureClient
     {
         private readonly SecretClient secretClient;
 
-        public AzureCredentialsHelper(SecretClient secretClient)
+        public AzureClient(SecretClient secretClient)
         {
             this.secretClient = secretClient;
         }
 
-        public AzureCredentialsHelper(
+        public AzureClient(
             string url,
             DefaultAzureCredential? defaultAzureCredential = null,
             SecretClientOptions? secretClientOptions = null

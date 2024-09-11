@@ -1,5 +1,6 @@
 ﻿using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
+using Vault.Azure.Utils;
 
 namespace Valuts.Azure.Console1
 {
@@ -14,12 +15,15 @@ namespace Valuts.Azure.Console1
             );
 
             var response = await secretClient.GetSecretAsync("redis-connectionstring");
-            var value = response?.Value?.Value ?? throw new CredentialUnavailableException("");
-            Console.WriteLine($"redis-connectionstring - {value}");
 
-            response = await secretClient.GetSecretAsync("application-rabbitmq-host");
-            value = response?.Value?.Value ?? throw new CredentialUnavailableException("");
-            Console.WriteLine($"redis-connectionstring - {value}");
+            var azureClient = new AzureClient("https://pvprod-keyvault.vault.azure.net");
+            var redisConnectionString = await azureClient.GetSecret("redis-connectionstring");
+            Console.WriteLine(
+                $"redis-connectionstring - {await azureClient.GetSecret("redis-connectionstring")}"
+            );
+            Console.WriteLine(
+                $"application-rabbitmq-host - {await azureClient.GetSecret("application-rabbitmq-host")}"
+            );
         }
 
         /*
