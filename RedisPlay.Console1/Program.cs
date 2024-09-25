@@ -55,7 +55,18 @@ public class Program
 
         Console.WriteLine("\n");
 
-        //Get All Keys
+        await GetAllEndpointsAndKeys(cache);
+
+        Console.ReadLine();
+    }
+
+    /// <summary>
+    /// Get All Endpoints and Keys
+    /// </summary>
+    /// <param name="cache"></param>
+    /// <returns></returns>
+    public static async Task GetAllEndpointsAndKeys(IDatabase cache)
+    {
         var endPoints = cache.Multiplexer.GetEndPoints();
         int i = 1;
         foreach (var endPoint in endPoints)
@@ -108,8 +119,6 @@ public class Program
                 }
             }
         }
-
-        Console.ReadLine();
     }
 
     private static bool Options_CertificateValidation(
