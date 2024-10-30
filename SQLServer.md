@@ -1,0 +1,11 @@
+### Rename Database
+```
+USE master;
+GO
+ALTER DATABASE archiadc SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+GO
+ALTER DATABASE archiadc MODIFY NAME = ArchiAdmin;
+GO
+ALTER DATABASE ArchiAdmin SET MULTI_USER;
+GO
+```
