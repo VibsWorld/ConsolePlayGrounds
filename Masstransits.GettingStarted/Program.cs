@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Testcontainers.RabbitMq;
 
+//https://github.com/MassTransit/Sample-GettingStarted/tree/master#install-rabbitmq
 namespace Masstransits
 {
     public class Program
