@@ -112,7 +112,7 @@ internal class ProgramGroupBy
                 testCase.ItemWidth,
                 testCase.ItemHeight,
                 testCase.PackingType,
-                testCase.ContentType
+                testCase.ContentType,
             })
             .Select(group =>
             {
@@ -140,7 +140,7 @@ internal class ProgramGroupBy
                                     firstRow.ItemWidth,
                                     firstRow.ItemHeight,
                                     1
-                                )
+                                ),
                             ]
                         ),
                         group

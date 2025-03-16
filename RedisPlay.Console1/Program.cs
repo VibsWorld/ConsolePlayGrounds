@@ -13,7 +13,7 @@ public class Program
         {
             EndPoints = { "localhost" },
             Password = "",
-            Ssl = false
+            Ssl = false,
         };
 
         //options.CertificateValidation += Options_CertificateValidation;
