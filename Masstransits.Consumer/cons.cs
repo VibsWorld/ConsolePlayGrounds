@@ -1,9 +1,7 @@
-namespace Masstransits.Setup.Consumers;
-
-using System.Threading.Tasks;
-using MassTransit;
+﻿using MassTransit;
 using Masstransits.Setup.Contracts;
-using Microsoft.Extensions.Logging;
+
+namespace Masstransits.Consumer;
 
 public class HelloWorldContractConsumer : IConsumer<HelloWorldContract>
 {
@@ -17,7 +15,7 @@ public class HelloWorldContractConsumer : IConsumer<HelloWorldContract>
     public async Task Consume(ConsumeContext<HelloWorldContract> context)
     {
         _logger.LogInformation(
-            "Received Text from Inbuilt Consumer: {Text}",
+            "Received Text from External Consumer: {Text}",
             context.Message.Value
         );
         await Task.Delay(1);

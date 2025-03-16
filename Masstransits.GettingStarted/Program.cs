@@ -1,15 +1,12 @@
 using System.Reflection;
 using System.Threading.Tasks;
-using Docker.DotNet.Models;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Networks;
 using MassTransit;
 using Masstransits.Setup;
-using Masstransits.Setup.Consumers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 //https://github.com/MassTransit/Sample-GettingStarted/tree/master#install-rabbitmq
 namespace Masstransits
@@ -26,38 +23,38 @@ namespace Masstransits
         private static INetwork dockerNetwork = new NetworkBuilder().Build();
         private static IContainer containerRabbitMq;
 
-            
-
         public static async Task Main(string[] args)
         {
             InitializeRabbitmqContainerOptions();
             await containerRabbitMq.StartAsync();
             ContainerPort = containerRabbitMq.GetMappedPublicPort(RabbitMqHostPort);
             var build = CreateHostBuilder(args).Build();
-
             await build.RunAsync();
         }
 
         private static void InitializeRabbitmqContainerOptions() =>
-        containerRabbitMq = new ContainerBuilder()
-            .WithNetwork(dockerNetwork)
-            .WithImage("rabbitmq:3-management")
-            .WithEnvironment("RABBITMQ_DEFAULT_USER", Username)
-            .WithEnvironment("RABBITMQ_DEFAULT_PASS", Password)
-            .WithEnvironment("RABBITMQ_DEFAULT_VHOST", VirtualHost)
-            .WithPortBinding(RabbitMqHostPort, RabbitMqHostPort)
-            .WithPortBinding(RabbitMqHttpManagementPort, RabbitMqHttpManagementPort)
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(RabbitMqHostPort))
-            .WithWaitStrategy(
-                Wait.ForUnixContainer().UntilPortIsAvailable(RabbitMqHttpManagementPort)
-            )
-            .WithWaitStrategy(
-                Wait.ForUnixContainer()
-                    .UntilHttpRequestIsSucceeded(request =>
-                        request.ForPort(RabbitMqHttpManagementPort).ForPath("/")
-                    )
-            )
-            .Build();
+            containerRabbitMq = new ContainerBuilder()
+                .WithHostname("rabbitmq")
+                .WithNetwork(dockerNetwork)
+                .WithImage("rabbitmq:3-management")
+                .WithEnvironment("RABBITMQ_DEFAULT_USER", Username)
+                .WithEnvironment("RABBITMQ_DEFAULT_PASS", Password)
+                .WithEnvironment("RABBITMQ_DEFAULT_VHOST", VirtualHost)
+                .WithExposedPort(RabbitMqHostPort)
+                .WithExposedPort(RabbitMqHttpManagementPort)
+                .WithPortBinding(RabbitMqHostPort, false)
+                .WithPortBinding(RabbitMqHttpManagementPort, false)
+                .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(RabbitMqHostPort))
+                .WithWaitStrategy(
+                    Wait.ForUnixContainer().UntilPortIsAvailable(RabbitMqHttpManagementPort)
+                )
+                .WithWaitStrategy(
+                    Wait.ForUnixContainer()
+                        .UntilHttpRequestIsSucceeded(request =>
+                            request.ForPort(RabbitMqHttpManagementPort).ForPath("/")
+                        )
+                )
+                .Build();
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
@@ -66,7 +63,6 @@ namespace Masstransits
                     {
                         services.AddMassTransit(x =>
                         {
-                            
                             //x.AddConsumer<HelloWorldContractConsumer>();
                             x.AddConsumers(Assembly.GetExecutingAssembly());
                             x.UsingRabbitMq(
