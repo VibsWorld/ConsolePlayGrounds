@@ -9,6 +9,8 @@ public class HelloWorldContractConsumer : IConsumer<HelloWorldContract>
 {
     readonly ILogger<HelloWorldContractConsumer> _logger;
 
+    public HelloWorldContractConsumer() { }
+
     public HelloWorldContractConsumer(ILogger<HelloWorldContractConsumer> logger)
     {
         _logger = logger;
