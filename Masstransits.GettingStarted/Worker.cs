@@ -21,7 +21,7 @@ public class Worker : BackgroundService
         while (!stoppingToken.IsCancellationRequested)
         {
             await _bus.Publish(
-                new HelloWorldContract { Value = $"The time is {DateTimeOffset.Now}" },
+                new OrderReceived { Value = $"The time is {DateTimeOffset.Now}" },
                 stoppingToken
             );
 

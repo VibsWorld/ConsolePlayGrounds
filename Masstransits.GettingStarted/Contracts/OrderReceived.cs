@@ -1,6 +1,6 @@
 namespace Masstransits.Setup.Contracts
 {
-    public record HelloWorldContract
+    public record OrderReceived
     {
         public string Value { get; init; }
     }

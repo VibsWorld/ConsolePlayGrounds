@@ -22,14 +22,17 @@ public class MasstransitTests
     public async Task TestInMemoryTestharness()
     {
         var harness = new InMemoryTestHarness();
-        var consumerHarness = harness.Consumer<HelloWorldContractConsumer>();
+        var consumerHarness = harness.Consumer<OrderReceivedConsumer>();
 
         await harness.Start();
         try
         {
-            var message = new HelloWorldContract { Value = "Hello, MassTransit!" };
+            var message = new OrderReceived
+            {
+                Value = $"Order received with Order Id 1 at {DateTime.Now}"
+            };
             await harness.InputQueueSendEndpoint.Send(message);
-            Assert.True(await consumerHarness.Consumed.Any<HelloWorldContract>());
+            Assert.True(await consumerHarness.Consumed.Any<OrderReceived>());
         }
         finally
         {
@@ -47,7 +50,7 @@ public class MasstransitTests
             //.AddYourBusinessServices() // register all of your normal business services
             .AddMassTransitTestHarness(x =>
             {
-                x.AddConsumer<HelloWorldContractConsumer>();
+                x.AddConsumer<OrderReceivedConsumer>();
 
                 x.UsingRabbitMq(
                     (context, cfg) =>
@@ -75,19 +78,26 @@ public class MasstransitTests
 
         try
         {
-            var message = new HelloWorldContract { Value = "Hello, MassTransit!" };
+            var message = new OrderReceived
+            {
+                Value = $"Order received with Order Id 1 at {DateTime.Now}"
+            };
 
-            await harness.Bus.Publish(
-                new HelloWorldContract { Value = "hellow world - " + DateTime.Now.ToString() }
-            );
+            await harness.Bus.Publish(message);
 
-            Assert.True(await harness.Published.Any<HelloWorldContract>());
+            Assert.True(await harness.Published.Any<OrderReceived>());
 
-            Assert.True(await harness.Consumed.Any<HelloWorldContract>());
+            Assert.True(await harness.Consumed.Any<OrderReceived>());
 
-            //var consumerHarness = harness.GetConsumerHarness<HelloWorldContractConsumer>();
+            Assert.True(await harness.Sent.Any<OrderProcessed>());
 
-            // Assert.True(await consumerHarness.Consumed.Any<HelloWorldContract>());
+            var consumerHarness = harness.GetConsumerHarness<OrderReceivedConsumer>();
+
+            Assert.True(await consumerHarness.Consumed.Any<OrderReceived>());
+
+            var subConsumerHarness = harness.GetConsumerHarness<OrderProcessedConsumer>();
+
+            Assert.True(await consumerHarness.Consumed.Any<OrderProcessed>());
         }
         catch (Exception ex)
         {

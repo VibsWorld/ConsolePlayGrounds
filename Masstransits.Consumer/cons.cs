@@ -3,7 +3,7 @@ using Masstransits.Setup.Contracts;
 
 namespace Masstransits.Consumer;
 
-public class HelloWorldContractConsumer : IConsumer<HelloWorldContract>
+public class HelloWorldContractConsumer : IConsumer<OrderReceived>
 {
     readonly ILogger<HelloWorldContractConsumer> _logger;
 
@@ -12,7 +12,7 @@ public class HelloWorldContractConsumer : IConsumer<HelloWorldContract>
         _logger = logger;
     }
 
-    public async Task Consume(ConsumeContext<HelloWorldContract> context)
+    public async Task Consume(ConsumeContext<OrderReceived> context)
     {
         _logger.LogInformation(
             "Received Text from External Consumer: {Text}",
