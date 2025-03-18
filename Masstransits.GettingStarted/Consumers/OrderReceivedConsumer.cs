@@ -24,11 +24,11 @@ public class OrderReceivedConsumer : IConsumer<OrderReceived>
             context.Message.Value
         );
 
-        var subConsumer = new OrderProcessed(
+        var orderProcessed = new OrderProcessed(
             context.Message.Value + "_" + Guid.NewGuid().ToString()
         );
 
-        await context.Send(subConsumer);
+        await context.Send(orderProcessed);
         await Task.Delay(1);
     }
 }
