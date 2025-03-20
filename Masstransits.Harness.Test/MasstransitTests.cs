@@ -33,6 +33,7 @@ public class MasstransitTests
             };
             await harness.InputQueueSendEndpoint.Send(message);
             Assert.True(await consumerHarness.Consumed.Any<OrderReceived>());
+            var result = await harness.Sent.Any<OrderProcessed>();
         }
         finally
         {
