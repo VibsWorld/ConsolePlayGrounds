@@ -19,8 +19,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Valuts.Azure.Console1", "Va
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vault.Azure.Utils", "Vault.Azure.Utils\Vault.Azure.Utils.csproj", "{13A28132-BAEA-4FFE-BC45-13CABF170FE5}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Language", "Language", "{D5B60A6B-C95A-433A-853D-EB644DA2AF20}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Language.LinqPlayground", "Language.LinqPlayground\Language.LinqPlayground.csproj", "{E8E86EDD-4FB9-445F-BE88-619520641C64}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Eventstore", "Eventstore", "{9DB62F9D-62DA-464C-B6F8-903158B7A6A6}"
