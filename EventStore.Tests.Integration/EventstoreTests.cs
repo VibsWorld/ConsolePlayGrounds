@@ -1,6 +1,6 @@
 //https://github.com/vaibhavPH/EventStoreSamples/blob/main/Quickstart/Dotnet/esdb-sample-dotnet/Program.cs
 //https://developers.eventstore.com/clients/grpc/getting-started.html#connection-string
-//
+//https://docs.kurrent.io/clients/grpc/reading-events.html
 //string connectionString = $"esdb://admin:changeit@localhost:2113?tls=false&tlsVerifyCert=false";
 
 using System.Text.Json;
