@@ -3,6 +3,7 @@
 //https://docs.kurrent.io/clients/grpc/reading-events.html
 //string connectionString = $"esdb://admin:changeit@localhost:2113?tls=false&tlsVerifyCert=false";
 
+using System.Collections.Concurrent;
 using System.Text.Json;
 using AutoFixture;
 using EventStore.Application.Events;
@@ -13,13 +14,13 @@ using Xunit.Abstractions;
 
 namespace EventStore.Tests.Integration
 {
-    public class EventstoreTests
+    public class EventstoreTests : IAsyncLifetime, IClassFixture<EventstoreFixture>
     {
         private readonly string eventstoreImageName = "eventstore/eventstore:23.10.0-bookworm-slim";
         private readonly EventStoreDbContainer eventStoreContainer;
         private readonly Fixture fixture = new();
-        private string eventstream = "TestStream";
         private readonly ITestOutputHelper testOutputHelper;
+        private readonly ConcurrentBag<string> listEventStreams = [];
 
         public EventstoreTests(ITestOutputHelper testOutputHelper)
         {
@@ -35,7 +36,7 @@ namespace EventStore.Tests.Integration
         public async Task TestEventStoreIntegration_ShouldBeSuccessful()
         {
             //Arrange
-            eventstream = $"eventstream-{Guid.NewGuid()}";
+            string eventstream = $"TestStream-{Guid.NewGuid()}";
             int totalEventsCount = 15;
             await eventStoreContainer.StartAsync();
             ushort eventstorePort = eventStoreContainer.GetMappedPublicPort(
@@ -54,7 +55,7 @@ namespace EventStore.Tests.Integration
                 testEvents,
                 async (x, _) =>
                 {
-                    await AppendDataToEventstoreStream(x, eventStoreClient);
+                    await AppendDataToEventstoreStream(x, eventStoreClient, eventstream);
                 }
             );
 
@@ -83,7 +84,8 @@ namespace EventStore.Tests.Integration
 
         private async Task AppendDataToEventstoreStream(
             TestEventCreated x,
-            EventStoreClient eventStoreClient
+            EventStoreClient eventStoreClient,
+            string eventstream
         )
         {
             var eventData = new EventData(
@@ -92,11 +94,19 @@ namespace EventStore.Tests.Integration
                 JsonSerializer.SerializeToUtf8Bytes(x)
             );
 
-            await eventStoreClient.AppendToStreamAsync(
-                eventstream,
-                StreamState.Any,
-                new[] { eventData }
-            );
+            await eventStoreClient.AppendToStreamAsync(eventstream, StreamState.Any, [eventData]);
+
+            listEventStreams.Add(eventstream);
+        }
+
+        public Task InitializeAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public async Task DisposeAsync()
+        {
+            foreach (var stream in listEventStreams) { }
         }
     }
 }
