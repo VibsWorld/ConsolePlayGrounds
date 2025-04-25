@@ -6,7 +6,8 @@
     <PackageVersion Include="Autofac" Version="7.0.1" />
     <PackageVersion Include="Azure.Identity" Version="1.12.0" />
     <PackageVersion Include="Azure.Security.KeyVault.Secrets" Version="4.6.0" />
-    <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
+	<PackageVersion Include="Serilog" Version="4.2.0" />
+	<PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageVersion Include="Serilog.Sinks.File" Version="6.0.0" />
     <PackageVersion Include="StackExchange.Redis" Version="2.8.14" />
     <PackageVersion Include="MassTransit.RabbitMQ" Version="8.4.0" />
