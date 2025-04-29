@@ -12,4 +12,8 @@
     <PackageReference Include="MimeKit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Common.Fixtures.Email\Common.Fixtures.Email.csproj" />
+  </ItemGroup>
+
 </Project>

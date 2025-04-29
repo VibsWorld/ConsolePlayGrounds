@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using Common.Fixtures.Email;
 using MailKit.Security;
 using MimeKit;
 
@@ -10,10 +11,13 @@ public class Program
 
     static async Task Main(string[] args)
     {
+        var smtpFixture = new SmtpFixture();
+        await smtpFixture.StartAsync();
+
         var defaultFromEmail = "FromTest@test.com";
         var defaultToEmail = "ToTest@test.com";
         var host = "localhost";
-        ushort port = 25;
+        ushort port = smtpFixture.PortSmtp;
         var userName = "test";
         var password = "test";
 

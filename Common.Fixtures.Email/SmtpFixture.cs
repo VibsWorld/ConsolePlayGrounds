@@ -18,15 +18,21 @@ public sealed class SmtpFixture : IAsyncDisposable
 
     private readonly IContainer containerSmtp;
 
-    public ushort PortSmtp => containerSmtp.GetMappedPublicPort(portSmtp);
+    public ushort PortSmtp { get; private set; }
 
-    public ushort ImapSmtp => containerSmtp.GetMappedPublicPort(imapSmtp);
+    public ushort ImapSmtp { get; private set; }
 
-    public ushort PortHttpInterface => containerSmtp.GetMappedPublicPort(portHttpInterface);
+    public ushort PortHttpInterface { get; private set; }
 
     public SmtpFixture() => containerSmtp = BuildSmtpContainer();
 
-    public async Task StartAsync() => await containerSmtp.StartAsync().ConfigureAwait(false);
+    public async Task StartAsync()
+    {
+        await containerSmtp.StartAsync().ConfigureAwait(false);
+        PortSmtp = containerSmtp.GetMappedPublicPort(portSmtp);
+        ImapSmtp = containerSmtp.GetMappedPublicPort(imapSmtp);
+        PortHttpInterface = containerSmtp.GetMappedPublicPort(portHttpInterface);
+    }
 
     public async ValueTask DisposeAsync() => await containerSmtp.DisposeAsync();
 
@@ -35,9 +41,9 @@ public sealed class SmtpFixture : IAsyncDisposable
             .WithNetwork(dockerNetwork)
             .WithHostname(DnsSmtp)
             .WithImage(ImageSmtp)
-            .WithPortBinding(portHttpInterface)
-            .WithPortBinding(PortSmtp)
-            .WithPortBinding(imapSmtp)
+            .WithPortBinding(portHttpInterface, true)
+            .WithPortBinding(portSmtp, true)
+            .WithPortBinding(imapSmtp, true)
             .WithEnvironment("ServerOptions__Urls", $"http://*:{portHttpInterface}")
             .WithEnvironment("ServerOptions__HostName", DnsSmtp)
             .WithEnvironment("ServerOptions__AuthenticationRequired", "true")
