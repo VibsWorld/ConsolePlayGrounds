@@ -14,7 +14,7 @@ public sealed class SmtpFixture : IAsyncDisposable
     private readonly ushort imapSmtp = 143;
     private readonly ushort portHttpInterface = 80;
 
-    private readonly INetwork dockerNetwork = new NetworkBuilder().Build();
+    private readonly INetwork? dockerNetwork;
 
     private readonly IContainer containerSmtp;
 
@@ -24,7 +24,11 @@ public sealed class SmtpFixture : IAsyncDisposable
 
     public ushort PortHttpInterface { get; private set; }
 
-    public SmtpFixture() => containerSmtp = BuildSmtpContainer();
+    public SmtpFixture(INetwork? dockerNetwork = null)
+    {
+        this.dockerNetwork = dockerNetwork ?? new NetworkBuilder().Build();
+        containerSmtp = BuildSmtpContainer();
+    }
 
     public async Task StartAsync()
     {
