@@ -29,7 +29,7 @@ public class AzureBlobStorageFixture : IAsyncLifetime
     private IContainer InitializeAzureBlbStorageContainer() =>
         new ContainerBuilder()
             .WithNetwork(containerNetwork)
-            .WithImage("mcr.microsoft.com/azure-storage/azurite")
+            .WithImage("mcr.microsoft.com/azure-storage/azurite:latest")
             .WithCommand("azurite-blob")
             .WithCommand("--blobHost", "0.0.0.0")
             .WithPortBinding(AzureBlobStorageHostPort, true)
