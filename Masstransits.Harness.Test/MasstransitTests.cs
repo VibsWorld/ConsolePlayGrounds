@@ -3,6 +3,7 @@
  *  https://masstransit.io/documentation/concepts/testing
  */
 
+using DotNet.Testcontainers.Builders;
 using MassTransit;
 using MassTransit.Testing;
 using Masstransits.Setup.Consumers;
@@ -15,7 +16,7 @@ namespace Masstransits.Harness.Test;
 public class MasstransitTests
 {
     private const ushort RabbitMqHostPort = 5672;
-
+    private const int RabbitMqManagenentPort = 15672;
     private static readonly ushort ContainerPort = RabbitMqHostPort;
 
     [Fact]
@@ -44,7 +45,17 @@ public class MasstransitTests
     [Fact]
     public async Task TestInRabbitMqLiveTestharness()
     {
-        var container = new RabbitMqBuilder().Build();
+        var container = new RabbitMqBuilder()
+            .WithImage("rabbitmq:3-management")
+            .WithPortBinding(ContainerPort, RabbitMqHostPort)
+            .WithPortBinding(RabbitMqManagenentPort, RabbitMqManagenentPort) // Management UI port
+            .WithWaitStrategy(
+                Wait.ForUnixContainer()
+                    .UntilHttpRequestIsSucceeded(request =>
+                        request.ForPort(RabbitMqManagenentPort).ForPath("/")
+                    )
+            )
+            .Build();
         await container.StartAsync();
 
         await using var provider = new ServiceCollection()
@@ -52,6 +63,7 @@ public class MasstransitTests
             .AddMassTransitTestHarness(x =>
             {
                 x.AddConsumer<OrderReceivedConsumer>();
+                x.AddConsumer<OrderProcessedConsumer>();
 
                 x.UsingRabbitMq(
                     (context, cfg) =>
@@ -75,6 +87,8 @@ public class MasstransitTests
 
         var harness = provider.GetTestHarness();
 
+        EndpointConvention.Map<OrderProcessed>(new Uri("queue:order-received"));
+
         await harness.Start();
 
         try
@@ -85,6 +99,7 @@ public class MasstransitTests
             };
 
             await harness.Bus.Publish(message);
+            //await harness.Bus.Send(message);
 
             Assert.True(await harness.Published.Any<OrderReceived>());
 
