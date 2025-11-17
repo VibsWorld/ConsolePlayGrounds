@@ -51,8 +51,10 @@ public sealed class SmtpFixture : IAsyncDisposable
             .WithEnvironment("ServerOptions__Urls", $"http://*:{portHttpInterface}")
             .WithEnvironment("ServerOptions__HostName", DnsSmtp)
             .WithEnvironment("ServerOptions__AuthenticationRequired", "true")
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(portHttpInterface))
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(PortSmtp))
+            .WithWaitStrategy(
+                Wait.ForUnixContainer().UntilInternalTcpPortIsAvailable(portHttpInterface)
+            )
+            .WithWaitStrategy(Wait.ForUnixContainer().UntilInternalTcpPortIsAvailable(PortSmtp))
             .WithWaitStrategy(
                 Wait.ForUnixContainer()
                     .UntilHttpRequestIsSucceeded(request =>

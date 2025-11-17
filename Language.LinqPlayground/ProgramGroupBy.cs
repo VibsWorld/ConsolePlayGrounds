@@ -87,7 +87,8 @@ internal class ProgramGroupBy
         PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder()
             .WithPortBinding(PostgreSqlBuilder.PostgreSqlPort, true)
             .WithWaitStrategy(
-                Wait.ForUnixContainer().UntilPortIsAvailable(PostgreSqlBuilder.PostgreSqlPort)
+                Wait.ForUnixContainer()
+                    .UntilInternalTcpPortIsAvailable(PostgreSqlBuilder.PostgreSqlPort)
             )
             .WithPassword("changeit")
             .Build();
