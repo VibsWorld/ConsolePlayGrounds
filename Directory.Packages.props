@@ -33,7 +33,7 @@
     <!--Masstransit Ends-->
     <PackageVersion Include="EventStore.Client.Grpc.Streams" Version="23.3.9" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
-    <PackageVersion Include="CsvHelper" Version="33.0.1" />
+    <PackageVersion Include="CsvHelper" Version="33.1.0" />
     <PackageVersion Include="Dapper" Version="2.1.66" />
     <PackageVersion Include="Npgsql" Version="9.0.3" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.24.0" />
