@@ -44,9 +44,12 @@ namespace Masstransits
                 .WithExposedPort(RabbitMqHttpManagementPort)
                 .WithPortBinding(RabbitMqHostPort, false)
                 .WithPortBinding(RabbitMqHttpManagementPort, false)
-                .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(RabbitMqHostPort))
                 .WithWaitStrategy(
-                    Wait.ForUnixContainer().UntilPortIsAvailable(RabbitMqHttpManagementPort)
+                    Wait.ForUnixContainer().UntilInternalTcpPortIsAvailable(RabbitMqHostPort)
+                )
+                .WithWaitStrategy(
+                    Wait.ForUnixContainer()
+                        .UntilInternalTcpPortIsAvailable(RabbitMqHttpManagementPort)
                 )
                 .WithWaitStrategy(
                     Wait.ForUnixContainer()

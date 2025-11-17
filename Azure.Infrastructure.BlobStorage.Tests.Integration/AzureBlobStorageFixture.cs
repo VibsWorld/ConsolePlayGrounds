@@ -34,7 +34,7 @@ public class AzureBlobStorageFixture : IAsyncLifetime
             .WithCommand("--blobHost", "0.0.0.0")
             .WithPortBinding(AzureBlobStorageHostPort, true)
             .WithWaitStrategy(
-                Wait.ForUnixContainer().UntilPortIsAvailable(AzureBlobStorageHostPort)
+                Wait.ForUnixContainer().UntilInternalTcpPortIsAvailable(AzureBlobStorageHostPort)
             )
             .Build();
 }
