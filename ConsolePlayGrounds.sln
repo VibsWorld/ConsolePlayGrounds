@@ -5,7 +5,7 @@ VisualStudioVersion = 17.10.35201.131
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Redis", "Redis", "{6E98506E-33F5-49EE-B430-1AF5E3560C50}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedisPlay.Console1", "RedisPlay.Console1\RedisPlay.Console1.csproj", "{996501B0-0CC4-4E4A-9F4A-6657CE9E327F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedisPlay.ConsoleApp", "RedisPlay.Console1\RedisPlay.ConsoleApp.csproj", "{996501B0-0CC4-4E4A-9F4A-6657CE9E327F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Helpers", "Helpers", "{385EE76F-8DDA-4A85-873B-8C41CDB276E2}"
 EndProject

@@ -24,7 +24,7 @@
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <!--Serilog Ends-->
-    <PackageVersion Include="StackExchange.Redis" Version="2.8.37" />
+    <PackageVersion Include="StackExchange.Redis" Version="2.9.32" />
     <!--Masstransit Starts-->
     <PackageVersion Include="MassTransit.RabbitMQ" Version="8.4.1" />
     <PackageVersion Include="MassTransit" Version="8.4.1" />
