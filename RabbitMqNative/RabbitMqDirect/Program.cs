@@ -29,12 +29,17 @@ public class Program
 
         var factory = new ConnectionFactory()
         {
-            HostName = "localhost",
-            UserName = "pvRetailDev",
-            Password = "pvRetailDev",
+            HostName = "hefty-elk.rmq.cloudamqp.com",
+            UserName = "vsakroma",
+            Password = "8TVbUTfS3YDZv0RjvvS1S-H_uXEhSGzZ",
             VirtualHost = "ParcelVision.Retail",
         };
-        var queueName = args[0];
+        var queueName = "birch_incidents:shipment_incident_comment_added_error";
+
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), $"TEST.txt");
+
+        await File.WriteAllTextAsync(filePath, "Test");
+
         using (var connection = await factory.CreateConnectionAsync())
         using (var channel = await connection.CreateChannelAsync())
         {
@@ -48,6 +53,8 @@ public class Program
             );
 
             bool finished = false;
+
+            StringBuilder sb = new StringBuilder();
 
             // --- Step 1 & 2: Consume/Get All Messages and Deserialize ---
             // We use BasicGet to pull messages one-by-one until the queue is empty
@@ -70,7 +77,10 @@ public class Program
                         var json = Encoding.UTF8.GetString(body);
 
                         Console.WriteLine("*************Message*************");
+                        sb.AppendLine("*************************Message*************");
+                        sb.Append(json ?? "Null object");
                         Console.WriteLine(json ?? "Null object");
+                        sb.AppendLine("**************************");
                         Console.WriteLine("**************************");
                         // Deserialize the JSON string to your message object
                         //var message = JsonSerializer.Deserialize<MyMessage>(json);
@@ -94,7 +104,14 @@ public class Program
                         );
                     }
                 }
-            }
+            } //End of while loop
+
+            filePath = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                $"RabbitMqMessages_{DateTime.Now:yyyyMMdd_HHmmss}.txt"
+            );
+
+            await File.WriteAllTextAsync(filePath, sb.ToString());
 
             // --- Step 3 & 4: Store (already done) and Sort the Collection ---
 
