@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 using Spectre.Console;
@@ -11,6 +12,8 @@ public class Program
     //https://www.youtube.com/watch?v=-ZRnq8ke_bU&list=PLLWMQd6PeGY0IReztlVcGLVZk9mzc4Hvr&index=2
     static async Task Main(string[] args)
     {
+        args = args.Length == 0 ? ["birch_application:five_minutes_ended_error"] : args;
+        var queueName = args[0];
         AnsiConsole.MarkupLine("[bold yellow]RabbitMQ Direct Message Reader[/]");
         var builder = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
@@ -25,16 +28,13 @@ public class Program
             AnsiConsole.MarkupLine($"[green]Last Used Queue:[/] {queue}");
         }
 
-        args = args.Length == 0 ? ["birch_incidents:close_incident"] : args;
-
         var factory = new ConnectionFactory()
         {
-            HostName = "hefty-elk.rmq.cloudamqp.com",
-            UserName = "vsakroma",
-            Password = "8TVbUTfS3YDZv0RjvvS1S-H_uXEhSGzZ",
+            HostName = "localhost",
+            UserName = "pvRetailDev",
+            Password = "pvRetailDev",
             VirtualHost = "ParcelVision.Retail",
         };
-        var queueName = "birch_incidents:shipment_incident_comment_added_error";
 
         var filePath = Path.Combine(Directory.GetCurrentDirectory(), $"TEST.txt");
 
@@ -73,15 +73,37 @@ public class Program
                 {
                     try
                     {
+                        var rss = (byte[])result.BasicProperties.Headers["MT-Fault-Message"];
+                        string text = Encoding.UTF8.GetString(rss);
                         var body = result.Body.ToArray();
                         var json = Encoding.UTF8.GetString(body);
 
-                        Console.WriteLine("*************Message*************");
-                        sb.AppendLine("*************************Message*************");
-                        sb.Append(json ?? "Null object");
-                        Console.WriteLine(json ?? "Null object");
-                        sb.AppendLine("**************************");
-                        Console.WriteLine("**************************");
+                        var pvrMessage = JsonSerializer.Deserialize<RabbitMqMessage>(json);
+
+                        if (pvrMessage?.message is not null)
+                        {
+                            //Console.WriteLine(pvrMessage.message + "," + text);
+
+                            var mss = pvrMessage.message;
+                            var mss1 = mss.GetType();
+
+                            var incident = JsonSerializer.Deserialize<SystemShipmentIncidentRaised>(
+                                mss
+                            );
+                            Console.WriteLine(
+                                "'" + incident.shipmentId + "'" /*+ "," + text*/
+                            );
+                            Console.WriteLine(",");
+                            //var message = JsonSerializer.Serialize<SystemShipmentIncidentRaised>()
+
+                            //Console.WriteLine("*************Message*************");
+                            //sb.AppendLine("*************************Message*************");
+                            //sb.Append(json ?? "Null object");
+                            //Console.WriteLine(json ?? "Null object");
+                            //sb.AppendLine("**************************");
+                            //Console.WriteLine("**************************");
+                        }
+
                         // Deserialize the JSON string to your message object
                         //var message = JsonSerializer.Deserialize<MyMessage>(json);
 
@@ -108,7 +130,7 @@ public class Program
 
             filePath = Path.Combine(
                 Directory.GetCurrentDirectory(),
-                $"RabbitMqMessages_{DateTime.Now:yyyyMMdd_HHmmss}.txt"
+                $"RabbitMqMessages_birch_application:basket_paid_error.txt"
             );
 
             await File.WriteAllTextAsync(filePath, sb.ToString());
@@ -122,7 +144,7 @@ public class Program
 }
 
 #pragma warning disable IDE1006 // Naming Styles
-public class PvrMessage
+public class RabbitMqMessage
 {
     public string messageId { get; set; }
     public string correlationId { get; set; }
@@ -131,21 +153,10 @@ public class PvrMessage
     public string sourceAddress { get; set; }
     public string destinationAddress { get; set; }
     public string[] messageType { get; set; }
-    public Message message { get; set; }
+    public JsonElement message { get; set; }
     public DateTime sentTime { get; set; }
     public Headers headers { get; set; }
     public Host host { get; set; }
-}
-
-public class Message
-{
-    public string correlationId { get; set; }
-    public string date { get; set; }
-    public string time { get; set; }
-    public string zone { get; set; }
-    public string id { get; set; }
-    public DateTime timeStamp { get; set; }
-    public string causationId { get; set; }
 }
 
 public class Headers
@@ -164,6 +175,24 @@ public class Host
     public string massTransitVersion { get; set; }
     public string operatingSystemVersion { get; set; }
 }
+
+public class SystemShipmentIncidentRaised
+{
+    public string incidentId { get; set; }
+    public string shipmentId { get; set; }
+    public string customerId { get; set; }
+    public string threePlId { get; set; }
+    public string query { get; set; }
+    public string type { get; set; }
+    public string subject { get; set; }
+    public string message { get; set; }
+    public int version { get; set; }
+    public string id { get; set; }
+    public DateTime timeStamp { get; set; }
+    public string correlationId { get; set; }
+    public string causationId { get; set; }
+}
+
 #pragma warning restore IDE1006 // Naming Styles
 
 public class AppSettings
