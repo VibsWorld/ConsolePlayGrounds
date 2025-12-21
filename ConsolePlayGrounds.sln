@@ -74,6 +74,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RabbitMqNative", "RabbitMqN
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitMqDirect", "RabbitMqNative\RabbitMqDirect\RabbitMqDirect.csproj", "{B3D07835-CE57-40FD-BF86-2ADF55E66243}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XUNIT3", "TestFrameworks\XUNIT3\XUNIT3.csproj", "{3CD46283-2C81-4995-8C17-7E95BFBF8CDC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -160,6 +162,10 @@ Global
 		{B3D07835-CE57-40FD-BF86-2ADF55E66243}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3D07835-CE57-40FD-BF86-2ADF55E66243}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3D07835-CE57-40FD-BF86-2ADF55E66243}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CD46283-2C81-4995-8C17-7E95BFBF8CDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CD46283-2C81-4995-8C17-7E95BFBF8CDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CD46283-2C81-4995-8C17-7E95BFBF8CDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CD46283-2C81-4995-8C17-7E95BFBF8CDC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
