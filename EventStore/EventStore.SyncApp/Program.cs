@@ -129,9 +129,25 @@ class Program
 
     private static async Task HandleDeleteStreamsAsync(EventStoreHelper localClient)
     {
+        Console.WriteLine("\nSelect deletion type:");
+        Console.WriteLine("1. Soft Delete (stream can be recovered)");
+        Console.WriteLine("2. Hard Delete / Tombstone (permanent, cannot be recovered)");
+        Console.Write("\nEnter your choice (1-2): ");
+
+        string deleteChoice = Console.ReadLine() ?? string.Empty;
+        bool isHardDelete = deleteChoice.Trim() == "2";
+
         Console.WriteLine("\nEnter stream name(s) to delete from local EventStore (comma-separated):");
         Console.WriteLine("Example: Orchid_ShipmentV2-guid1,Orchid_ShipmentV2-guid2\n");
-        Console.WriteLine("⚠️  Warning: This action cannot be undone!\n");
+        
+        if (isHardDelete)
+        {
+            Console.WriteLine("⚠️⚠️  WARNING: HARD DELETE - This action PERMANENTLY removes the stream and CANNOT be undone! ⚠️⚠️\n");
+        }
+        else
+        {
+            Console.WriteLine("⚠️  Warning: Soft delete - Stream will be marked as deleted but can be recovered.\n");
+        }
 
         string input = Console.ReadLine() ?? string.Empty;
 
@@ -147,7 +163,8 @@ class Program
             return;
         }
 
-        Console.Write($"\nAre you sure you want to delete {streamNames.Count} stream(s)? (yes/no): ");
+        string deleteType = isHardDelete ? "HARD DELETE (tombstone)" : "soft delete";
+        Console.Write($"\nAre you sure you want to {deleteType} {streamNames.Count} stream(s)? (yes/no): ");
         string confirmation = Console.ReadLine() ?? string.Empty;
 
         if (!confirmation.Equals("yes", StringComparison.OrdinalIgnoreCase))
@@ -158,7 +175,8 @@ class Program
 
         try
         {
-            Console.WriteLine($"\n🗑️  Starting deletion of {streamNames.Count} stream(s)...\n");
+            string emoji = isHardDelete ? "💀" : "🗑️";
+            Console.WriteLine($"\n{emoji}  Starting {deleteType} of {streamNames.Count} stream(s)...\n");
 
             int successCount = 0;
             int failureCount = 0;
@@ -167,10 +185,19 @@ class Program
             {
                 try
                 {
-                    Console.WriteLine($"🗑️  Deleting stream: {streamName}");
-                    await localClient.DeleteStreamAsync(streamName);
+                    Console.WriteLine($"{emoji}  Deleting stream: {streamName}");
+                    
+                    if (isHardDelete)
+                    {
+                        await localClient.HardDeleteStreamAsync(streamName);
+                    }
+                    else
+                    {
+                        await localClient.DeleteStreamAsync(streamName);
+                    }
+                    
                     successCount++;
-                    Console.WriteLine($"   ✓ Stream {streamName} deleted successfully\n");
+                    Console.WriteLine($"   ✓ Stream {streamName} deleted successfully ({deleteType})\n");
                 }
                 catch (Exception ex)
                 {
@@ -183,10 +210,10 @@ class Program
                 $"""
 
                 ╔════════════════════════════════════════════════╗
-                ║          Deletion Completed                    ║
+                ║          Deletion Completed ({(isHardDelete ? "HARD" : "SOFT"),12})           ║
                 ╠════════════════════════════════════════════════╣
-                ║ Streams Deleted:   {successCount, 40} ║
-                ║ Streams Failed:    {failureCount, 40} ║
+                ║ Streams Deleted:   {successCount,40} ║
+                ║ Streams Failed:    {failureCount,40} ║
                 ╚════════════════════════════════════════════════╝
                 """
             );

@@ -58,6 +58,14 @@ public class EventStoreHelper(EventStoreClientSettings settings) : IDisposable
         );
     }
 
+    public async Task HardDeleteStreamAsync(string streamName)
+    {
+        await eventStoreClient.TombstoneAsync(
+            streamName,
+            StreamState.Any
+        );
+    }
+
     public static Task<EventStoreHelper> GetCloudEventStoreClient()
     {
         var settings = EventStoreClientSettings.Create(AppConfiguration.CloudEventStoreUrl);
