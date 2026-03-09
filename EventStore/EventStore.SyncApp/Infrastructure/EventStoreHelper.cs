@@ -50,6 +50,14 @@ public class EventStoreHelper(EventStoreClientSettings settings) : IDisposable
         );
     }
 
+    public async Task DeleteStreamAsync(string streamName)
+    {
+        await eventStoreClient.DeleteAsync(
+            streamName,
+            StreamState.Any
+        );
+    }
+
     public static Task<EventStoreHelper> GetCloudEventStoreClient()
     {
         var settings = EventStoreClientSettings.Create(AppConfiguration.CloudEventStoreUrl);

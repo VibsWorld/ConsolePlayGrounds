@@ -9,7 +9,7 @@ class Program
         Console.WriteLine(
             """
             ╔════════════════════════════════════════════════╗
-            ║      EventStore Sync Tool (Cloud → Local)      ║
+            ║      EventStore Sync Tool (Cloud ↔ Local)      ║
             ╚════════════════════════════════════════════════╝
             """
         );
@@ -33,7 +33,38 @@ class Program
             return;
         }
 
-        Console.WriteLine("Enter stream name(s) to sync (comma-separated):");
+        Console.WriteLine("Select an option:");
+        Console.WriteLine("1. Sync streams from Cloud to Local");
+        Console.WriteLine("2. Delete stream(s) from Local EventStore");
+        Console.WriteLine("3. Exit\n");
+        Console.Write("Enter your choice (1-3): ");
+
+        string choice = Console.ReadLine() ?? string.Empty;
+
+        switch (choice.Trim())
+        {
+            case "1":
+                await HandleSyncStreamsAsync(localClient);
+                break;
+            case "2":
+                await HandleDeleteStreamsAsync(localClient);
+                break;
+            case "3":
+                Console.WriteLine("Exiting...");
+                localClient?.Dispose();
+                return;
+            default:
+                Console.WriteLine("✗ Invalid choice. Exiting.");
+                localClient?.Dispose();
+                return;
+        }
+
+        localClient?.Dispose();
+    }
+
+    private static async Task HandleSyncStreamsAsync(EventStoreHelper localClient)
+    {
+        Console.WriteLine("\nEnter stream name(s) to sync (comma-separated):");
         Console.WriteLine("Example: Orchid_ShipmentV2-guid1,Orchid_ShipmentV2-guid2\n");
 
         string input = Console.ReadLine() ?? string.Empty;
@@ -47,7 +78,6 @@ class Program
         if (streamNames.Count == 0)
         {
             Console.WriteLine("✗ No stream names provided. Exiting.");
-            localClient?.Dispose();
             return;
         }
 
@@ -94,7 +124,77 @@ class Program
         finally
         {
             cloudClient?.Dispose();
-            localClient?.Dispose();
+        }
+    }
+
+    private static async Task HandleDeleteStreamsAsync(EventStoreHelper localClient)
+    {
+        Console.WriteLine("\nEnter stream name(s) to delete from local EventStore (comma-separated):");
+        Console.WriteLine("Example: Orchid_ShipmentV2-guid1,Orchid_ShipmentV2-guid2\n");
+        Console.WriteLine("⚠️  Warning: This action cannot be undone!\n");
+
+        string input = Console.ReadLine() ?? string.Empty;
+
+        var streamNames = input
+            .Split(',')
+            .Select(s => s.Trim())
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .ToList();
+
+        if (streamNames.Count == 0)
+        {
+            Console.WriteLine("✗ No stream names provided. Exiting.");
+            return;
+        }
+
+        Console.Write($"\nAre you sure you want to delete {streamNames.Count} stream(s)? (yes/no): ");
+        string confirmation = Console.ReadLine() ?? string.Empty;
+
+        if (!confirmation.Equals("yes", StringComparison.OrdinalIgnoreCase))
+        {
+            Console.WriteLine("✗ Deletion cancelled.");
+            return;
+        }
+
+        try
+        {
+            Console.WriteLine($"\n🗑️  Starting deletion of {streamNames.Count} stream(s)...\n");
+
+            int successCount = 0;
+            int failureCount = 0;
+
+            foreach (var streamName in streamNames)
+            {
+                try
+                {
+                    Console.WriteLine($"🗑️  Deleting stream: {streamName}");
+                    await localClient.DeleteStreamAsync(streamName);
+                    successCount++;
+                    Console.WriteLine($"   ✓ Stream {streamName} deleted successfully\n");
+                }
+                catch (Exception ex)
+                {
+                    failureCount++;
+                    Console.WriteLine($"   ✗ Failed to delete stream {streamName}: {ex.Message}\n");
+                }
+            }
+
+            Console.WriteLine(
+                $"""
+
+                ╔════════════════════════════════════════════════╗
+                ║          Deletion Completed                    ║
+                ╠════════════════════════════════════════════════╣
+                ║ Streams Deleted:   {successCount, 40} ║
+                ║ Streams Failed:    {failureCount, 40} ║
+                ╚════════════════════════════════════════════════╝
+                """
+            );
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"\n✗ Error during deletion: {ex.Message}");
+            Console.WriteLine($"StackTrace: {ex.StackTrace}");
         }
     }
 
