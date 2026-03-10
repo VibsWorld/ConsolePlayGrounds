@@ -36,8 +36,9 @@ class Program
         Console.WriteLine("Select an option:");
         Console.WriteLine("1. Sync streams from Cloud to Local");
         Console.WriteLine("2. Delete stream(s) from Local EventStore");
-        Console.WriteLine("3. Exit\n");
-        Console.Write("Enter your choice (1-3): ");
+        Console.WriteLine("3. Sync streams from CSV file");
+        Console.WriteLine("4. Exit\n");
+        Console.Write("Enter your choice (1-4): ");
 
         string choice = Console.ReadLine() ?? string.Empty;
 
@@ -50,6 +51,9 @@ class Program
                 await HandleDeleteStreamsAsync(localClient);
                 break;
             case "3":
+                await HandleCsvSyncAsync(localClient);
+                break;
+            case "4":
                 Console.WriteLine("Exiting...");
                 localClient?.Dispose();
                 return;
@@ -223,6 +227,222 @@ class Program
             Console.WriteLine($"\n✗ Error during deletion: {ex.Message}");
             Console.WriteLine($"StackTrace: {ex.StackTrace}");
         }
+    }
+
+    private static async Task HandleCsvSyncAsync(EventStoreHelper localClient)
+    {
+        Console.WriteLine("\nEnter the CSV filename (must be in the same directory as the exe):");
+        Console.WriteLine("Example: streams.csv");
+        Console.WriteLine("  ↵  Press ENTER to automatically select the most recently modified .csv file in the exe directory.\n");
+        Console.Write("Filename: ");
+        string fileName = Console.ReadLine() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            var csvFiles = Directory
+                .GetFiles(AppContext.BaseDirectory, "*.csv")
+                .Select(f => new FileInfo(f))
+                .OrderByDescending(f => f.LastWriteTime)
+                .ToList();
+
+            if (csvFiles.Count == 0)
+            {
+                Console.WriteLine($"✗ No .csv files found in: {AppContext.BaseDirectory}");
+                return;
+            }
+
+            var latest = csvFiles[0];
+            fileName = latest.Name;
+            Console.WriteLine($"✓ Auto-selected: {fileName} (last modified: {latest.LastWriteTime:yyyy-MM-dd HH:mm:ss})");
+
+            if (csvFiles.Count > 1)
+            {
+                Console.WriteLine($"  Other .csv files found ({csvFiles.Count - 1}):");
+                foreach (var f in csvFiles.Skip(1))
+                {
+                    Console.WriteLine($"   • {f.Name} (last modified: {f.LastWriteTime:yyyy-MM-dd HH:mm:ss})");
+                }
+            }
+        }
+
+        Console.Write("\nEnter the column name in the CSV that contains the stream IDs: ");
+        Console.WriteLine("  ↵  Press ENTER to automatically use the first column in the CSV.\n");
+        Console.Write("Column name: ");
+        string columnName = Console.ReadLine() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(columnName))
+        {
+            string filePath = Path.Combine(AppContext.BaseDirectory, fileName);
+            string headerLine = (await File.ReadAllLinesAsync(filePath)).FirstOrDefault() ?? string.Empty;
+            columnName = headerLine.Split(',')[0].Trim();
+
+            if (string.IsNullOrWhiteSpace(columnName))
+            {
+                Console.WriteLine("✗ Could not determine the first column name from the CSV. Exiting.");
+                return;
+            }
+
+            Console.WriteLine($"✓ Auto-selected column: \"{columnName}\"");
+        }
+
+        Console.WriteLine("\nEnter stream prefix(es) to prepend to each CSV value (comma-separated):");
+        Console.WriteLine("Example: Olive_DraftShipment_V3-,Orchid_ShipmentV2-\n");
+        Console.Write("Prefix(es): ");
+        string prefixInput = Console.ReadLine() ?? string.Empty;
+
+        var streamPrefixes = prefixInput
+            .Split(',')
+            .Select(s => s.Trim())
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .ToList();
+
+        if (streamPrefixes.Count == 0)
+        {
+            Console.WriteLine("✗ No stream prefixes provided. Exiting.");
+            return;
+        }
+
+        List<string> streamNames;
+        try
+        {
+            streamNames = await ReadStreamNamesFromCsvAsync(fileName, columnName, streamPrefixes);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"✗ Failed to read CSV: {ex.Message}");
+            return;
+        }
+
+        if (streamNames.Count == 0)
+        {
+            Console.WriteLine("✗ No stream names could be generated from the CSV. Exiting.");
+            return;
+        }
+
+        Console.WriteLine($"\n✓ Generated {streamNames.Count} stream name(s) from CSV:");
+        foreach (var name in streamNames.Take(5))
+        {
+            Console.WriteLine($"   • {name}");
+        }
+        if (streamNames.Count > 5)
+        {
+            Console.WriteLine($"   ... and {streamNames.Count - 5} more");
+        }
+
+        var cloudClient = await EventStoreHelper.GetCloudEventStoreClient();
+
+        try
+        {
+            Console.WriteLine($"\n📡 Starting sync of {streamNames.Count} stream(s)...\n");
+
+            int totalStreamsProcessed = 0;
+            int totalEventsProcessed = 0;
+            int totalEventsFailed = 0;
+
+            foreach (var streamName in streamNames)
+            {
+                var (successCount, failureCount) = await SyncStreamAsync(
+                    cloudClient,
+                    localClient,
+                    streamName
+                );
+                totalStreamsProcessed++;
+                totalEventsProcessed += successCount;
+                totalEventsFailed += failureCount;
+            }
+
+            Console.WriteLine(
+                $"""
+
+                ╔════════════════════════════════════════════════╗
+                ║           Sync Completed Successfully          ║
+                ╠════════════════════════════════════════════════╣
+                ║ Streams Processed: {totalStreamsProcessed, 40} ║
+                ║ Events Synced:     {totalEventsProcessed, 40} ║
+                ║ Events Failed:     {totalEventsFailed, 40} ║
+                ╚════════════════════════════════════════════════╝
+                """
+            );
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"\n✗ Error during sync: {ex.Message}");
+            Console.WriteLine($"StackTrace: {ex.StackTrace}");
+        }
+        finally
+        {
+            cloudClient?.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Reads a single-column CSV file from the exe directory and generates stream names by
+    /// combining each <paramref name="streamPrefixes"/> entry with each value found under
+    /// <paramref name="columnName"/>.
+    /// </summary>
+    private static async Task<List<string>> ReadStreamNamesFromCsvAsync(
+        string fileName,
+        string columnName,
+        IReadOnlyCollection<string> streamPrefixes
+    )
+    {
+        string filePath = Path.Combine(AppContext.BaseDirectory, fileName);
+
+        if (!File.Exists(filePath))
+        {
+            throw new FileNotFoundException($"CSV file not found at: {filePath}");
+        }
+
+        string[] lines = await File.ReadAllLinesAsync(filePath);
+
+        if (lines.Length == 0)
+        {
+            throw new InvalidOperationException("CSV file is empty.");
+        }
+
+        string[] headers = lines[0].Split(',');
+        int columnIndex = Array.FindIndex(
+            headers,
+            h => h.Trim().Equals(columnName, StringComparison.OrdinalIgnoreCase)
+        );
+
+        if (columnIndex == -1)
+        {
+            throw new InvalidOperationException(
+                $"Column '{columnName}' not found. Available columns: {string.Join(", ", headers.Select(h => h.Trim()))}"
+            );
+        }
+
+        var streamNames = new List<string>();
+
+        foreach (var line in lines.Skip(1))
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
+            string[] fields = line.Split(',');
+
+            if (columnIndex >= fields.Length)
+            {
+                continue;
+            }
+
+            string value = fields[columnIndex].Trim();
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            foreach (var prefix in streamPrefixes)
+            {
+                streamNames.Add($"{prefix}{value}");
+            }
+        }
+
+        return streamNames;
     }
 
     private static async Task<(int successCount, int failureCount)> SyncStreamAsync(

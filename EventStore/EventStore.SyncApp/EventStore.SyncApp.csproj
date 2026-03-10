@@ -11,4 +11,10 @@
     <PackageReference Include="EventStore.Client.Grpc.Streams" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="streams.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
