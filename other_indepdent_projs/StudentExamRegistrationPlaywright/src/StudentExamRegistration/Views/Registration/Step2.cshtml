@@ -1,0 +1,37 @@
+@{
+    ViewData["Title"] = "Step 2 - Choose Courses";
+    var name = TempData.Peek("Name")?.ToString();
+    var email = TempData.Peek("Email")?.ToString();
+}
+
+<div class="steps">
+    <span>1. Personal Details</span>
+    <span>&rsaquo;</span>
+    <span class="active">2. Choose Courses</span>
+    <span>&rsaquo;</span>
+    <span>3. Fees &amp; Payment</span>
+</div>
+
+<h1>Choose Your Courses</h1>
+
+<div class="summary">
+    <div><span>Name</span><strong>@name</strong></div>
+    <div><span>Email</span><strong>@email</strong></div>
+</div>
+
+<form method="post" asp-controller="Registration" asp-action="Step2">
+    <label class="check">
+        <input type="checkbox" id="math" name="courses" value="Math" />
+        <span>Math</span>
+    </label>
+    <label class="check">
+        <input type="checkbox" id="physics" name="courses" value="Physics" />
+        <span>Physics</span>
+    </label>
+    <label class="check">
+        <input type="checkbox" id="chemistry" name="courses" value="Chemistry" />
+        <span>Chemistry</span>
+    </label>
+
+    <button type="submit" id="next2" class="btn">Next</button>
+</form>

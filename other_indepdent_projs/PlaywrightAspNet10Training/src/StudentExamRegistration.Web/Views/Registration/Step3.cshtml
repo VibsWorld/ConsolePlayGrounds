@@ -1,0 +1,33 @@
+@model RegistrationViewModel
+@{
+    ViewData["Title"] = "Step 3 - Fees & Payment";
+    var fee = TempData.Peek("Fee")?.ToString() ?? "0";
+}
+
+<div class="steps">
+    <span>1. Personal Details</span>
+    <span>&rsaquo;</span>
+    <span>2. Choose Courses</span>
+    <span>&rsaquo;</span>
+    <span class="active">3. Fees &amp; Payment</span>
+</div>
+
+<h1>Review &amp; Pay</h1>
+
+<div class="summary">
+    <div><span>Registered To</span><strong>@Model.Name</strong></div>
+    <div><span>Email</span><strong>@Model.Email</strong></div>
+    <div>
+        <span>Courses</span>
+        <strong>@(Model.Courses.Count > 0 ? string.Join(", ", Model.Courses) : "None")</strong>
+    </div>
+    <div class="fee"><span>Total Fee</span><span>INR @fee</span></div>
+</div>
+
+<form method="post" asp-controller="Registration" asp-action="Complete">
+    <label for="receiptId">Receipt / Transaction Id</label>
+    <input type="text" id="receiptId" name="ReceiptId" value="@Model.ReceiptId" placeholder="RCPT-1001" />
+    <span class="validation">@Html.ValidationMessageFor(m => m.ReceiptId)</span>
+
+    <button type="submit" id="finish" class="btn">Finish Registration</button>
+</form>
