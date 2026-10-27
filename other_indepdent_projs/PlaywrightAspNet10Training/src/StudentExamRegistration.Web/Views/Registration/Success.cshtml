@@ -1,0 +1,27 @@
+@model RegistrationViewModel
+@{
+    ViewData["Title"] = "Registration Successful";
+}
+
+<div class="steps">
+    <span>1. Personal Details</span>
+    <span>&rsaquo;</span>
+    <span>2. Choose Courses</span>
+    <span>&rsaquo;</span>
+    <span class="active">Complete</span>
+</div>
+
+<h1 class="success">Registration Successful</h1>
+<p>Your exam registration has been recorded.</p>
+
+<div class="summary">
+    <div><span>Name</span><strong>@Model.Name</strong></div>
+    <div><span>Email</span><strong>@Model.Email</strong></div>
+    <div>
+        <span>Courses</span>
+        <strong>@(Model.Courses.Count > 0 ? string.Join(", ", Model.Courses) : "None")</strong>
+    </div>
+    <div><span>Receipt Number</span><strong id="receipt">@Model.ReceiptId</strong></div>
+</div>
+
+<a href="@Url.Action("Step1", "Registration")" class="btn" style="display:inline-block;text-decoration:none;">Register Another Student</a>

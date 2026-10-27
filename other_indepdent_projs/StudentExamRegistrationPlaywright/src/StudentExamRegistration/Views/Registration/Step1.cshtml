@@ -1,0 +1,24 @@
+@{
+    ViewData["Title"] = "Step 1 - Personal Details";
+}
+
+<div class="steps">
+    <span class="active">1. Personal Details</span>
+    <span>&rsaquo;</span>
+    <span>2. Choose Courses</span>
+    <span>&rsaquo;</span>
+    <span>3. Fees &amp; Payment</span>
+</div>
+
+<h1>Student Exam Registration</h1>
+<p>Enter your details to begin the registration.</p>
+
+<form method="post" asp-controller="Registration" asp-action="Step1">
+    <label for="name">Full Name</label>
+    <input type="text" id="name" name="name" placeholder="Vaibhav Student" required />
+
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" placeholder="student@test.com" required />
+
+    <button type="submit" id="next1" class="btn">Next</button>
+</form>

@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "Step 3 - Fees & Payment";
+    var name = TempData.Peek("Name")?.ToString();
+    var fee = TempData.Peek("Fee")?.ToString() ?? "0";
+    var courses = (TempData.Peek("Courses") as string ?? string.Empty)
+        .Split(',', StringSplitOptions.RemoveEmptyEntries);
+}
+
+<div class="steps">
+    <span>1. Personal Details</span>
+    <span>&rsaquo;</span>
+    <span>2. Choose Courses</span>
+    <span>&rsaquo;</span>
+    <span class="active">3. Fees &amp; Payment</span>
+</div>
+
+<h1>Review &amp; Pay</h1>
+
+<div class="summary">
+    <div><span>Registered To</span><strong>@name</strong></div>
+    <div>
+        <span>Courses</span>
+        <strong>@(courses is { Length: > 0 } ? string.Join(", ", courses) : "None")</strong>
+    </div>
+    <div class="fee"><span>Total Fee</span><span>INR @fee</span></div>
+</div>
+
+<form method="post" asp-controller="Registration" asp-action="Complete">
+    <label for="receiptId">Receipt / Transaction Id</label>
+    <input type="text" id="receiptId" name="receiptId" placeholder="RCPT-1001" required />
+
+    <button type="submit" id="finish" class="btn">Finish Registration</button>
+</form>

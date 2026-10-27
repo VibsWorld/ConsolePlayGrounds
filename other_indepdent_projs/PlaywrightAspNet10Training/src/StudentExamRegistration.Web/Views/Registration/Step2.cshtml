@@ -1,0 +1,42 @@
+@model RegistrationViewModel
+@{
+    ViewData["Title"] = "Step 2 - Choose Courses";
+}
+
+<div class="steps">
+    <span>1. Personal Details</span>
+    <span>&rsaquo;</span>
+    <span class="active">2. Choose Courses</span>
+    <span>&rsaquo;</span>
+    <span>3. Fees &amp; Payment</span>
+</div>
+
+<h1>Choose Your Courses</h1>
+
+<div class="summary">
+    <div><span>Name</span><strong>@Model.Name</strong></div>
+    <div><span>Email</span><strong>@Model.Email</strong></div>
+</div>
+
+<form method="post" asp-controller="Registration" asp-action="Step2">
+    <label class="check">
+        <input type="checkbox" id="math" name="Courses" value="Math" />
+        <span>Math</span>
+    </label>
+    <label class="check">
+        <input type="checkbox" id="physics" name="Courses" value="Physics" />
+        <span>Physics</span>
+    </label>
+    <label class="check">
+        <input type="checkbox" id="chemistry" name="Courses" value="Chemistry" />
+        <span>Chemistry</span>
+    </label>
+    <label class="check">
+        <input type="checkbox" id="biology" name="Courses" value="Biology" />
+        <span>Biology</span>
+    </label>
+
+    <span class="validation">@Html.ValidationMessageFor(m => m.Courses)</span>
+
+    <button type="submit" id="next2" class="btn">Next</button>
+</form>

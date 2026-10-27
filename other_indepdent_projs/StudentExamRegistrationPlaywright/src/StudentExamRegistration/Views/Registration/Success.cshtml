@@ -1,0 +1,21 @@
+@{
+    ViewData["Title"] = "Registration Successful";
+    var receipt = ViewBag.Receipt as string;
+}
+
+<div class="steps">
+    <span>1. Personal Details</span>
+    <span>&rsaquo;</span>
+    <span>2. Choose Courses</span>
+    <span>&rsaquo;</span>
+    <span class="active">Complete</span>
+</div>
+
+<h1 class="success">Registration Successful</h1>
+<p>Your exam registration has been recorded.</p>
+
+<div class="summary">
+    <div><span>Receipt Number</span><strong id="receipt">@receipt</strong></div>
+</div>
+
+<a href="/" class="btn" style="display:inline-block;text-decoration:none;">Register Another Student</a>
